@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Calculator | Alok Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+        }
+        input, button {
+            padding: 10px;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>String Calculator</h2>
+    <label for="numbers">Enter Numbers:</label>
+    <input type="text" id="numbers" placeholder="e.g., 1,2,3 or //;\n1;2">
+    
+    <button onclick="calculate()">Calculate</button>
+    
+    <div id="result" class="result"></div>
+</div>
+
+<script>
+// Step 1: Create the StringCalculator class
+class StringCalculator {
+    add(numbers) {
+        if (!numbers) return 0;  // Handle empty string
+
+        console.log("Original Input: ", numbers); // Log original input
+
+        // Step 2: Check if custom delimiter is defined
+        const delimiterRegex = /^\/\/(.+?)\n/;
+        const delimiterMatch = numbers.match(delimiterRegex);
+
+        // Default delimiter is comma or newline
+        let delimiter = /,|\n/;
+        let numberString = numbers.trim();  // Trim any leading/trailing spaces or newlines
+        console.log(numberString);
+        numberString =  numberString.replaceAll("\\n",",");
+        // If a custom delimiter is found, update the delimiter
+        if (delimiterMatch) {
+            console.log("Custom delimiter found: ", delimiterMatch[1]); // Log custom delimiter
+            const customDelimiter = delimiterMatch[1];
+            delimiter = new RegExp(customDelimiter.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, '\\$&'), 'g'); 
+            numberString = numbers.slice(delimiterMatch[0].length); // Remove the custom delimiter part
+        }
+
+        // Step 3: Replace newlines (\n) and semicolons (;) with commas
+        console.log("Before replacing newlines and semicolons: ", numberString); // Log before replacing
+        numberString = numberString.replace(/[\n;]/g, ',');  // Replace both \n and ; with commas
+        console.log("After replacing newlines and semicolons: ", numberString); // Log after replacing
+
+        // Step 4: Handle cases where we have extra commas at the beginning or end
+        numberString = numberString.replace(/^,|,$/g, '');  // Remove leading or trailing commas
+        console.log("After removing leading/trailing commas: ", numberString);
+
+        // Step 5: Split the numberString into an array of numbers using the delimiter
+        const numberArray = numberString.split(delimiter)  // Split using the delimiter(s)
+            .map(num => parseInt(num.trim(), 10))  // Convert each to integer
+            .filter(num => !isNaN(num));  // Remove any invalid numbers
+
+        console.log("Array of numbers: ", numberArray); // Log the array of numbers
+
+        // Step 6: Check for negative numbers
+        const negativeNumbers = numberArray.filter(num => num < 0);
+        if (negativeNumbers.length > 0) {
+            throw new Error(`negative numbers not allowed ${negativeNumbers.join(", ")}`);
+        }
+
+        // Step 7: Sum the numbers, ignoring those greater than 1000
+        return numberArray.reduce((sum, num) => sum + (num <= 1000 ? num : 0), 0);
+    }
+}
+
+// Step 8: Initialize the StringCalculator instance
+const calculator = new StringCalculator();
+
+// Step 9: Handle user input and calculate result
+function calculate() {
+    const input = document.getElementById("numbers").value.trim();
+    const resultDiv = document.getElementById("result");
+
+    // Handle empty input
+    if (input === "") {
+        resultDiv.textContent = "Result: 0";
+        resultDiv.style.color = 'black';
+        return;
+    }
+
+    try {
+        const result = calculator.add(input);  // Use the StringCalculator's add method
+        resultDiv.textContent = `Result: ${result}`;
+        resultDiv.style.color = 'black';
+    } catch (error) {
+        resultDiv.textContent = error.message;
+        resultDiv.style.color = 'red';
+    }
+}
+</script>
+
+</body>
+</html>
